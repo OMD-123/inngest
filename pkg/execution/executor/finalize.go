@@ -87,6 +87,11 @@ func (e *executor) Finalize(ctx context.Context, opts execution.FinalizeOpts) er
 		}
 	}
 
+	// a loop run that finishes as failed or cancelled still ticks, so the
+	// instance does not stall.  the key comes from the run's events, which
+	// are gone once the state is deleted below.
+	e.loopTickOnFinalize(ctx, opts.Metadata, status, opts.Optional.InputEvents)
+
 	// Release any manual-release semaphores held by this run.  Manual-release semaphores
 	// (e.g. function concurrency) are acquired when the start job is dequeued but are NOT
 	// released when individual step leases complete — they persist for the lifetime of the

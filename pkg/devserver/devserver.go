@@ -59,6 +59,7 @@ import (
 	"github.com/inngest/inngest/pkg/execution/exechttp"
 	"github.com/inngest/inngest/pkg/execution/executor"
 	"github.com/inngest/inngest/pkg/execution/history"
+	"github.com/inngest/inngest/pkg/execution/loops"
 	"github.com/inngest/inngest/pkg/execution/pauses"
 	"github.com/inngest/inngest/pkg/execution/queue"
 	"github.com/inngest/inngest/pkg/execution/ratelimit"
@@ -66,6 +67,7 @@ import (
 	"github.com/inngest/inngest/pkg/execution/runner"
 	"github.com/inngest/inngest/pkg/execution/singleton"
 	"github.com/inngest/inngest/pkg/execution/state"
+	"github.com/inngest/inngest/pkg/execution/state/kv/kvredis"
 	"github.com/inngest/inngest/pkg/execution/state/redis_state"
 	sv2 "github.com/inngest/inngest/pkg/execution/state/v2"
 	"github.com/inngest/inngest/pkg/expressions"
@@ -352,6 +354,10 @@ func start(ctx context.Context, opts StartOpts) error {
 	}
 	smv2 := redis_state.MustRunServiceV2(sm)
 
+	// loop records live under "{kv}:".  the key text after the prefix
+	// starts with the tenant.
+	loopStore := loops.NewStore(kvredis.New(unshardedRc, "{kv}:"))
+
 	broadcaster := realtime.NewRedisBroadcaster(realtimePubRc, realtimeSubRc)
 	defer func() {
 		realtimePubRc.Close()
@@ -607,6 +613,7 @@ func start(ctx context.Context, opts StartOpts) error {
 	executorOpts := []executor.ExecutorOpt{
 		executor.WithHTTPClient(httpClient),
 		executor.WithStateManager(smv2),
+		executor.WithLoopStore(loopStore),
 		executor.WithPauseManager(pauseMgr),
 		executor.WithDriverV1(drivers...),
 		executor.WithDriverV2(httpv2.NewDriver(httpClient)),
