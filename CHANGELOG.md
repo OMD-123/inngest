@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.53.1] - 2026-11-13
+
+### 🐛 Bug Fixes
+
+- *(constraintapi)* Add retry support for fn level concurrency (#5236)
+
 ## [v1.53.0] - 2026-11-12
 
 ### 🚀 Features
@@ -18,6 +24,10 @@ All notable changes to this project will be documented in this file.
 ### ⚡ Performance
 
 - *(duckdbseed)* Write each table from its own appender (#5207)
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V1.53.0 (#5242)
 
 ## [v1.52.0] - 2026-11-10
 
